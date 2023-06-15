@@ -9,6 +9,7 @@ class RadarPainter extends CustomPainter {
   Offset offset;
   double scale = 1.0;
   List<Spot> spots;
+  Rect rect;
   Function(Spot, TapDownDetails) onTapSpot;
 
   RadarPainter({
@@ -17,7 +18,12 @@ class RadarPainter extends CustomPainter {
     this.scale = 1.0,
     this.spots = const [],
     required this.onTapSpot,
-  });
+  }) : rect = Rect.fromLTWH(
+          20,
+          20,
+          MediaQuery.of(context).size.width - 10,
+          MediaQuery.of(context).size.height - 10,
+        );
 
   _paintSpot({
     required Canvas canvas,
@@ -146,7 +152,7 @@ class RadarPainter extends CustomPainter {
         center: center1,
         offset: offset,
         spot: spot,
-        rect: Rect.fromLTWH(0, 0, size.width, 600),
+        rect: rect,
       );
     }
   }

@@ -184,7 +184,7 @@ packages:
     source: hosted
     version: "0.5.1"
   touchable:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: touchable
       sha256: "50040b39778bb1adc8a480625de8681253bd2134785395cf16abd66bb13d3ed0"
