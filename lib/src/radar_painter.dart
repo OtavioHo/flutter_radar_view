@@ -18,11 +18,11 @@ class RadarPainter extends CustomPainter {
     this.scale = 1.0,
     this.spots = const [],
     required this.onTapSpot,
-  }) : rect = Rect.fromLTWH(
+  }) : rect = Rect.fromLTRB(
           20,
           20,
-          MediaQuery.of(context).size.width - 10,
-          MediaQuery.of(context).size.height - 10,
+          MediaQuery.of(context).size.width - 20,
+          MediaQuery.of(context).size.height - 20,
         );
 
   _paintSpot({
@@ -39,8 +39,8 @@ class RadarPainter extends CustomPainter {
 
     Offset position = center
         .translate(
-          spot.distance * cos(spot.angle) * scale,
-          spot.distance * sin(spot.angle) * scale,
+          spot.distance * cos(spot.theta) * scale,
+          spot.distance * sin(spot.theta) * scale,
         )
         .translate(offset.dx, offset.dy);
 
@@ -76,42 +76,41 @@ class RadarPainter extends CustomPainter {
       Offset edgePosition;
       double dx;
       double dy;
-      IconData icon;
 
       if (position.dx > rect.left) {
-        dx = min(position.dx, rect.width) - 30;
+        dx = min(position.dx, rect.right);
       } else {
-        dx = max(position.dx, 0.0);
+        dx = max(position.dx, rect.left);
       }
       if (position.dy > rect.top) {
-        dy = min(position.dy, rect.height) - 30;
+        dy = min(position.dy, rect.bottom);
       } else {
-        dy = max(position.dy, 0.0);
-      }
-
-      if (dx == rect.width - 30) {
-        icon = Icons.arrow_forward;
-      } else if (dx == rect.left) {
-        icon = Icons.arrow_back;
-      } else if (dy == rect.height - 30) {
-        icon = Icons.arrow_downward;
-      } else {
-        icon = Icons.arrow_upward;
+        dy = max(position.dy, rect.left);
       }
 
       edgePosition = Offset(dx, dy);
+      double theta = atan2(
+        center.dy - edgePosition.dy,
+        center.dx - edgePosition.dx,
+      );
 
       TextPainter textPainter = TextPainter(textDirection: TextDirection.rtl);
       textPainter.text = TextSpan(
-        text: String.fromCharCode(icon.codePoint),
+        text: String.fromCharCode(Icons.arrow_forward_ios.codePoint),
         style: TextStyle(
           fontSize: 30.0,
-          fontFamily: icon.fontFamily,
+          fontFamily: Icons.arrow_forward_ios.fontFamily,
           color: Colors.black,
         ),
       );
       textPainter.layout();
-      textPainter.paint(canvas, edgePosition);
+
+      canvas.save();
+      canvas.translate(edgePosition.dx, edgePosition.dy);
+      canvas.rotate(theta + pi);
+      canvas.translate(-edgePosition.dx, -edgePosition.dy);
+      textPainter.paint(canvas, edgePosition.translate(-14, -14));
+      canvas.restore();
     }
   }
 
@@ -124,12 +123,12 @@ class RadarPainter extends CustomPainter {
     final bgpaint = Paint();
     bgpaint.color = Colors.yellow.withOpacity(0.2);
 
-    var center1 = Offset(size.width / 2, size.height / 2);
+    var center = Offset(size.width / 2, size.height / 2);
     canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgpaint);
     for (var i = 0; i < 10; i++) {
       canvas.drawCircle(
-        center1.translate(offset.dx, offset.dy),
+        center.translate(offset.dx, offset.dy),
         50 * i.toDouble() * scale,
         ballpaint,
       );
@@ -138,7 +137,7 @@ class RadarPainter extends CustomPainter {
     ballpaint.style = PaintingStyle.fill;
 
     canvas.drawCircle(
-      center1.translate(offset.dx, offset.dy),
+      center.translate(offset.dx, offset.dy),
       15 * scale,
       ballpaint,
     );
@@ -149,7 +148,7 @@ class RadarPainter extends CustomPainter {
       _paintSpot(
         canvas: canvas,
         touchyCanvas: touchyCanvas,
-        center: center1,
+        center: center,
         offset: offset,
         spot: spot,
         rect: rect,

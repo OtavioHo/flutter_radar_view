@@ -88,8 +88,8 @@ class _RadarViewState extends State<RadarView>
                       painter: RadarPainter(
                         onTapSpot: (spot, details) =>
                             animateToNewPosition(Offset(
-                          -spot.distance * cos(spot.angle) * scale,
-                          -spot.distance * sin(spot.angle) * scale,
+                          -spot.distance * cos(spot.theta) * scale,
+                          -spot.distance * sin(spot.theta) * scale,
                         )),
                         context: context,
                         offset:

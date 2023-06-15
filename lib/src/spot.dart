@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 
 class Spot {
   final double distance;
-  late double angle;
+  late double theta;
   final IconData icon;
 
   Spot({required this.distance, this.icon = Icons.add}) {
-    angle = Random().nextDouble() * 2 * pi;
+    theta = Random().nextDouble() * 2 * pi;
   }
 }
