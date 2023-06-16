@@ -5,18 +5,7 @@ import 'package:flutter_radar_view/src/spot.dart';
 import 'package:touchable/touchable.dart';
 
 class RadarPainter extends CustomPainter {
-  BuildContext context;
-  Offset offset;
-  BoxConstraints constraints;
-  double scale = 1.0;
-  List<Spot> spots;
-  Rect rect;
-  Function(Spot, TapDownDetails)? onTapSpot;
-  Color? backgroundColor;
-  Color? foregroundColor;
-  Function(Canvas, Size)? backgroundPainter;
-  Function(Spot, Canvas, TouchyCanvas)? spotPainter;
-
+  /// The Painter for the radar view
   RadarPainter({
     required this.context,
     required this.offset,
@@ -36,6 +25,42 @@ class RadarPainter extends CustomPainter {
               constraints.maxWidth - 20,
               constraints.maxHeight - 20,
             );
+
+  /// The context of the widget that is using this painter.
+  BuildContext context;
+
+  /// The current offset of the radar.
+  Offset offset;
+
+  /// The constraints of the widget that is using this painter.
+  BoxConstraints constraints;
+
+  /// The current scale of the radar
+  double scale = 1.0;
+
+  /// The list of spots to be displayed in the radar
+  List<Spot> spots;
+
+  Rect rect;
+
+  /// The callback for when a spot is tapped
+  Function(Spot, TapDownDetails)? onTapSpot;
+
+  /// The background color of the radar
+  ///
+  /// Defaults to the theme's background color
+  Color? backgroundColor;
+
+  /// The foreground color of the radar
+  ///
+  /// Defaults to the theme's primary color
+  Color? foregroundColor;
+
+  /// A function that overrides the default background painter
+  Function(Canvas, Size)? backgroundPainter;
+
+  /// A function that overrides the default spot painter
+  Function(Spot, Canvas, TouchyCanvas)? spotPainter;
 
   _defaultSpotPainter(Spot spot, Canvas canvas, TouchyCanvas touchyCanvas) {
     final borderPaint = Paint()..color = Colors.black;
@@ -131,8 +156,7 @@ class RadarPainter extends CustomPainter {
 
   _paintBackground(Canvas canvas, Size size) {
     final ballpaint = Paint();
-    ballpaint.color =
-        foregroundColor ?? Theme.of(context).colorScheme.secondary;
+    ballpaint.color = foregroundColor ?? Theme.of(context).colorScheme.primary;
     ballpaint.style = PaintingStyle.stroke;
 
     final bgpaint = Paint();

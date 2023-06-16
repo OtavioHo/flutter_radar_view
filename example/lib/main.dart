@@ -46,7 +46,9 @@ class _MyHomePageState extends State<MyHomePage> {
       body: SizedBox(
         height: 500,
         width: 500,
-        child: RadarView(spots: spots),
+        child: RadarView(
+          spots: spots,
+        ),
       ),
     );
   }

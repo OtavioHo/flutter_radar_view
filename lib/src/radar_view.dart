@@ -6,13 +6,30 @@ import 'package:touchable/touchable.dart';
 import '../flutter_radar_view.dart';
 
 class RadarView extends StatefulWidget {
-  final List<Spot> spots;
-  final double initialScale;
   const RadarView({
     super.key,
     required this.spots,
     this.initialScale = 1.0,
+    this.rect,
+    this.isDragable = true,
   });
+
+  /// The list of spots to be displayed in the radar
+  final List<Spot> spots;
+
+  /// The initial scale of the radar
+  final double initialScale;
+
+  /// The Rect param defines the radar's boundaries
+  /// The spots will only be displayed within this rect.
+  /// The radar will be centered within this rect.
+  /// the background will still be painted in the full widget.
+  /// Defaults to the widget constraints with 20px padding
+  final Rect? rect;
+
+  /// If the radar is dragable or not
+  /// Defaults to true
+  final bool isDragable;
 
   @override
   State<RadarView> createState() => _RadarViewState();
@@ -60,13 +77,15 @@ class _RadarViewState extends State<RadarView>
           Positioned.fill(
             child: GestureDetector(
               onScaleUpdate: (details) {
-                setState(() {
-                  _dragable = true;
-                  _currentOffset = _currentOffset.translate(
-                    details.focalPointDelta.dx,
-                    details.focalPointDelta.dy,
-                  );
-                });
+                if (widget.isDragable) {
+                  setState(() {
+                    _dragable = true;
+                    _currentOffset = _currentOffset.translate(
+                      details.focalPointDelta.dx,
+                      details.focalPointDelta.dy,
+                    );
+                  });
+                }
 
                 if (details.pointerCount == 2) {
                   setState(() {
@@ -87,6 +106,7 @@ class _RadarViewState extends State<RadarView>
                     constraints: constraints,
                     scale: scale,
                     spots: widget.spots,
+                    rect: widget.rect,
                   ),
                 ),
               ),
