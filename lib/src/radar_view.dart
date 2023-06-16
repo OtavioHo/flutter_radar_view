@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:touchable/touchable.dart';
 
 import '../flutter_radar_view.dart';
+import 'default_radar_painter.dart';
 
 class RadarView extends StatefulWidget {
   const RadarView({
@@ -12,6 +13,7 @@ class RadarView extends StatefulWidget {
     this.initialScale = 1.0,
     this.rect,
     this.isDragable = true,
+    this.customRadarPainter,
   });
 
   /// The list of spots to be displayed in the radar
@@ -30,6 +32,8 @@ class RadarView extends StatefulWidget {
   /// If the radar is dragable or not
   /// Defaults to true
   final bool isDragable;
+
+  final RadarPainter? customRadarPainter;
 
   @override
   State<RadarView> createState() => _RadarViewState();
@@ -96,18 +100,21 @@ class _RadarViewState extends State<RadarView>
               child: CanvasTouchDetector(
                 gesturesToOverride: const [GestureType.onTapDown],
                 builder: (context) => CustomPaint(
-                  painter: RadarPainter(
-                    onTapSpot: (spot, details) => animateToNewPosition(Offset(
-                      -spot.distance * cos(spot.theta) * scale,
-                      -spot.distance * sin(spot.theta) * scale,
-                    )),
-                    context: context,
-                    offset: _dragable ? _currentOffset : _offsetAnimation.value,
-                    constraints: constraints,
-                    scale: scale,
-                    spots: widget.spots,
-                    rect: widget.rect,
-                  ),
+                  painter: widget.customRadarPainter ??
+                      DefaultRadarPainter(
+                        onTapSpot: (spot, details) =>
+                            animateToNewPosition(Offset(
+                          -spot.distance * cos(spot.theta) * scale,
+                          -spot.distance * sin(spot.theta) * scale,
+                        )),
+                        context: context,
+                        offset:
+                            _dragable ? _currentOffset : _offsetAnimation.value,
+                        constraints: constraints,
+                        scale: scale,
+                        spots: widget.spots,
+                        rect: widget.rect,
+                      ),
                 ),
               ),
             ),
