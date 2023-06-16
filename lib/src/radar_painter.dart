@@ -7,32 +7,43 @@ import 'package:touchable/touchable.dart';
 class RadarPainter extends CustomPainter {
   BuildContext context;
   Offset offset;
+  BoxConstraints constraints;
   double scale = 1.0;
   List<Spot> spots;
   Rect rect;
   Function(Spot, TapDownDetails)? onTapSpot;
+  Color? backgroundColor;
+  Color? foregroundColor;
+  Function(Canvas, Size)? backgroundPainter;
+  Function(Spot, Canvas, TouchyCanvas)? spotPainter;
 
   RadarPainter({
     required this.context,
     required this.offset,
+    required this.constraints,
     this.scale = 1.0,
     this.spots = const [],
     this.onTapSpot,
-  }) : rect = Rect.fromLTRB(
-          20,
-          20,
-          MediaQuery.of(context).size.width - 20,
-          MediaQuery.of(context).size.height - 20,
-        );
+    this.backgroundColor,
+    this.foregroundColor,
+    this.backgroundPainter,
+    this.spotPainter,
+    Rect? rect,
+  }) : rect = rect ??
+            Rect.fromLTRB(
+              20,
+              20,
+              constraints.maxWidth - 20,
+              constraints.maxHeight - 20,
+            );
 
-  _defaulSpotPainter(Spot spot, Canvas canvas, TouchyCanvas touchyCanvas) {
+  _defaultSpotPainter(Spot spot, Canvas canvas, TouchyCanvas touchyCanvas) {
     final borderPaint = Paint()..color = Colors.black;
     final backgroundPaint = Paint()..color = Colors.white;
-    const double spotSize = 25;
 
     touchyCanvas.drawCircle(
       spot.position(this),
-      spotSize,
+      spot.size,
       borderPaint,
       onTapDown:
           onTapSpot != null ? (details) => onTapSpot!(spot, details) : null,
@@ -40,7 +51,7 @@ class RadarPainter extends CustomPainter {
 
     touchyCanvas.drawCircle(
       spot.position(this),
-      spotSize - 2,
+      spot.size - 2,
       backgroundPaint,
       onTapDown:
           onTapSpot != null ? (details) => onTapSpot!(spot, details) : null,
@@ -58,7 +69,7 @@ class RadarPainter extends CustomPainter {
     textPainter.paint(canvas, spot.position(this).translate(-14, -14));
   }
 
-  _defaultOverflowPainte(Spot spot, Canvas canvas, TouchyCanvas touchyCanvas) {
+  _defaultOverflowPainter(Spot spot, Canvas canvas, TouchyCanvas touchyCanvas) {
     Offset edgePosition;
     double dx;
     double dy;
@@ -88,7 +99,7 @@ class RadarPainter extends CustomPainter {
       style: TextStyle(
         fontSize: 30.0,
         fontFamily: Icons.arrow_forward_ios.fontFamily,
-        color: Colors.black,
+        color: Theme.of(context).colorScheme.onBackground,
       ),
     );
     textPainter.layout();
@@ -108,23 +119,26 @@ class RadarPainter extends CustomPainter {
     required Rect rect,
   }) {
     if (rect.contains(spot.position(this))) {
-      _defaulSpotPainter(spot, canvas, touchyCanvas);
+      if (spotPainter == null) {
+        _defaultSpotPainter(spot, canvas, touchyCanvas);
+      } else {
+        spotPainter!(spot, canvas, touchyCanvas);
+      }
     } else {
-      _defaultOverflowPainte(spot, canvas, touchyCanvas);
+      _defaultOverflowPainter(spot, canvas, touchyCanvas);
     }
   }
 
-  @override
-  void paint(Canvas canvas, Size size) {
+  _paintBackground(Canvas canvas, Size size) {
     final ballpaint = Paint();
-    ballpaint.color = Colors.green;
+    ballpaint.color =
+        foregroundColor ?? Theme.of(context).colorScheme.secondary;
     ballpaint.style = PaintingStyle.stroke;
 
     final bgpaint = Paint();
-    bgpaint.color = Colors.yellow.withOpacity(0.2);
+    bgpaint.color = backgroundColor ?? Theme.of(context).colorScheme.background;
 
     var center = rect.center;
-    canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgpaint);
     for (var i = 0; i < 10; i++) {
       canvas.drawCircle(
@@ -141,6 +155,16 @@ class RadarPainter extends CustomPainter {
       15 * scale,
       ballpaint,
     );
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
+    if (backgroundPainter == null) {
+      _paintBackground(canvas, size);
+    } else {
+      backgroundPainter!(canvas, size);
+    }
 
     var touchyCanvas = TouchyCanvas(context, canvas);
 

@@ -6,7 +6,13 @@ import 'package:touchable/touchable.dart';
 import '../flutter_radar_view.dart';
 
 class RadarView extends StatefulWidget {
-  const RadarView({super.key});
+  final List<Spot> spots;
+  final double initialScale;
+  const RadarView({
+    super.key,
+    required this.spots,
+    this.initialScale = 1.0,
+  });
 
   @override
   State<RadarView> createState() => _RadarViewState();
@@ -19,7 +25,7 @@ class _RadarViewState extends State<RadarView>
   late Animation<Offset> _offsetAnimation;
   Offset _currentOffset = const Offset(0, 0);
   bool _dragable = true;
-  final GlobalKey<ScaffoldState> _key = GlobalKey();
+  late double scale;
 
   @override
   void initState() {
@@ -32,6 +38,8 @@ class _RadarViewState extends State<RadarView>
       ..addListener(() {
         setState(() {});
       });
+
+    scale = widget.initialScale;
     super.initState();
   }
 
@@ -44,67 +52,48 @@ class _RadarViewState extends State<RadarView>
     _currentOffset = position;
   }
 
-  double scale = 1.0;
-  List<Spot> spots = [
-    Spot(distance: 100, icon: Icons.add_box_sharp),
-    Spot(distance: 150, icon: Icons.comment_bank),
-    Spot(distance: 200),
-    Spot(distance: 250),
-    Spot(distance: 300),
-    Spot(distance: 350),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _key,
-      drawer: const Drawer(),
-      body: SafeArea(
-        child: SizedBox(
-          height: MediaQuery.of(context).size.height,
-          width: MediaQuery.of(context).size.width,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: GestureDetector(
-                  onScaleUpdate: (details) {
-                    setState(() {
-                      _dragable = true;
-                      _currentOffset = _currentOffset.translate(
-                        details.focalPointDelta.dx,
-                        details.focalPointDelta.dy,
-                      );
-                    });
+    return LayoutBuilder(builder: (context, constraints) {
+      return Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              onScaleUpdate: (details) {
+                setState(() {
+                  _dragable = true;
+                  _currentOffset = _currentOffset.translate(
+                    details.focalPointDelta.dx,
+                    details.focalPointDelta.dy,
+                  );
+                });
 
-                    if (details.pointerCount == 2) {
-                      setState(() {
-                        scale = details.scale;
-                      });
-                    }
-                  },
-                  child: CanvasTouchDetector(
-                    gesturesToOverride: const [GestureType.onTapDown],
-                    builder: (context) => CustomPaint(
-                      painter: RadarPainter(
-                        onTapSpot: (spot, details) =>
-                            animateToNewPosition(Offset(
-                          -spot.distance * cos(spot.theta) * scale,
-                          -spot.distance * sin(spot.theta) * scale,
-                        )),
-                        context: context,
-                        offset:
-                            _dragable ? _currentOffset : _offsetAnimation.value,
-                        scale: scale,
-                        spots: spots,
-                      ),
-                    ),
+                if (details.pointerCount == 2) {
+                  setState(() {
+                    scale = details.scale;
+                  });
+                }
+              },
+              child: CanvasTouchDetector(
+                gesturesToOverride: const [GestureType.onTapDown],
+                builder: (context) => CustomPaint(
+                  painter: RadarPainter(
+                    onTapSpot: (spot, details) => animateToNewPosition(Offset(
+                      -spot.distance * cos(spot.theta) * scale,
+                      -spot.distance * sin(spot.theta) * scale,
+                    )),
+                    context: context,
+                    offset: _dragable ? _currentOffset : _offsetAnimation.value,
+                    constraints: constraints,
+                    scale: scale,
+                    spots: widget.spots,
                   ),
                 ),
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
+        ],
+      );
+    });
   }
 }

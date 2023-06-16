@@ -31,10 +31,23 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List<Spot> spots = [
+    Spot(distance: 100, icon: Icons.add_box_sharp),
+    Spot(distance: 150, icon: Icons.comment_bank),
+    Spot(distance: 200),
+    Spot(distance: 250),
+    Spot(distance: 300),
+    Spot(distance: 350),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: RadarView(),
+    return Scaffold(
+      body: SizedBox(
+        height: 500,
+        width: 500,
+        child: RadarView(spots: spots),
+      ),
     );
   }
 }
