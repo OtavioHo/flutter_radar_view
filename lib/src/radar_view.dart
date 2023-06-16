@@ -15,7 +15,22 @@ class RadarView extends StatefulWidget {
     this.backgroundColor,
     this.foregroundColor,
     this.onTapSpot,
-  });
+  })  : assert(
+          customRadarPainter == null || backgroundColor == null,
+          'You can\'t use a custom painter and a background color at the same time, define the background color in your custom painter',
+        ),
+        assert(
+          customRadarPainter == null || foregroundColor == null,
+          'You can\'t use a custom painter and a foreground color at the same time, define the foreground color in your custom painter',
+        ),
+        assert(
+          customRadarPainter == null || onTapSpot == null,
+          'You can\'t use a custom painter and a onTapSpot at the same time, define the onTapSpot in your custom painter',
+        ),
+        assert(
+          customRadarPainter == null || rect == null,
+          'You can\'t use a custom painter and a rect at the same time, define the rect in your custom painter',
+        );
 
   /// The list of spots to be displayed in the radar
   final List<Spot> spots;
