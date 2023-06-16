@@ -1,3 +1,4 @@
+import 'package:example/my_custom_radar_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_radar_view/flutter_radar_view.dart';
 
@@ -15,7 +16,7 @@ class MyApp extends StatelessWidget {
       title: 'Radar View Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        useMaterial3: false,
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -42,12 +43,34 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SizedBox(
-        height: 500,
-        width: 500,
-        child: RadarView(
-          spots: spots,
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(widget.title),
+          bottom: const TabBar(tabs: [
+            Tab(text: 'Default Painter'),
+            Tab(text: 'Custom Painter'),
+          ]),
+        ),
+        body: TabBarView(
+          children: [
+            RadarView(
+              spots: spots,
+              initialScale: 1,
+            ),
+            RadarView(
+              spots: spots,
+              customRadarPainter: MyCustomRadarPainter(
+                rect: Rect.fromLTWH(
+                  20,
+                  100,
+                  MediaQuery.of(context).size.width - 40,
+                  MediaQuery.of(context).size.height - 250,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

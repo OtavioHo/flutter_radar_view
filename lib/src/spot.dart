@@ -10,12 +10,17 @@ class Spot<T> {
   final double size;
   final T? data;
 
-  Offset position(RadarPainter painter) => painter.rect.center
-      .translate(
-        distance * cos(theta) * painter.scale,
-        distance * sin(theta) * painter.scale,
-      )
-      .translate(painter.offset.dx, painter.offset.dy);
+  Offset position(RadarPainter painter) {
+    Offset center = painter.painter.rect?.center ??
+        painter.constraints.biggest.center(Offset.zero);
+
+    return center
+        .translate(
+          distance * cos(theta) * painter.painter.scale,
+          distance * sin(theta) * painter.painter.scale,
+        )
+        .translate(painter.offset.dx, painter.offset.dy);
+  }
 
   Spot({
     required this.distance,

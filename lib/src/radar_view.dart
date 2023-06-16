@@ -1,10 +1,8 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_radar_view/src/default_radar_painter.dart';
 import 'package:touchable/touchable.dart';
 
 import '../flutter_radar_view.dart';
-import 'default_radar_painter.dart';
 
 class RadarView extends StatefulWidget {
   const RadarView({
@@ -14,6 +12,9 @@ class RadarView extends StatefulWidget {
     this.rect,
     this.isDragable = true,
     this.customRadarPainter,
+    this.backgroundColor,
+    this.foregroundColor,
+    this.onTapSpot,
   });
 
   /// The list of spots to be displayed in the radar
@@ -33,7 +34,17 @@ class RadarView extends StatefulWidget {
   /// Defaults to true
   final bool isDragable;
 
-  final RadarPainter? customRadarPainter;
+  /// A custom painter for the radar
+  final CustomRadarPainter? customRadarPainter;
+
+  /// The background color of the radar
+  final Color? backgroundColor;
+
+  /// The foreground color of the radar
+  final Color? foregroundColor;
+
+  /// Callback of click spot
+  final Function(Spot, TapDownDetails)? onTapSpot;
 
   @override
   State<RadarView> createState() => _RadarViewState();
@@ -61,6 +72,7 @@ class _RadarViewState extends State<RadarView>
       });
 
     scale = widget.initialScale;
+
     super.initState();
   }
 
@@ -98,25 +110,32 @@ class _RadarViewState extends State<RadarView>
                 }
               },
               child: CanvasTouchDetector(
-                gesturesToOverride: const [GestureType.onTapDown],
-                builder: (context) => CustomPaint(
-                  painter: widget.customRadarPainter ??
-                      DefaultRadarPainter(
-                        onTapSpot: (spot, details) =>
-                            animateToNewPosition(Offset(
-                          -spot.distance * cos(spot.theta) * scale,
-                          -spot.distance * sin(spot.theta) * scale,
-                        )),
-                        context: context,
-                        offset:
-                            _dragable ? _currentOffset : _offsetAnimation.value,
-                        constraints: constraints,
-                        scale: scale,
-                        spots: widget.spots,
-                        rect: widget.rect,
-                      ),
-                ),
-              ),
+                  gesturesToOverride: const [GestureType.onTapDown],
+                  builder: (context) {
+                    RadarPainter radarPainter = RadarPainter(
+                      context: context,
+                      offset:
+                          _dragable ? _currentOffset : _offsetAnimation.value,
+                      constraints: constraints,
+                      spots: widget.spots,
+                      painter: widget.customRadarPainter ??
+                          DefaultRadarPainter(
+                            rect: widget.rect ??
+                                Rect.fromLTRB(
+                                  20,
+                                  20,
+                                  constraints.maxWidth - 20,
+                                  constraints.maxHeight - 20,
+                                ),
+                            backgroundColor: widget.backgroundColor,
+                            foregroundColor: widget.foregroundColor,
+                            onTapSpot: widget.onTapSpot,
+                            scale: scale,
+                          ),
+                    );
+
+                    return CustomPaint(painter: radarPainter);
+                  }),
             ),
           ),
         ],
