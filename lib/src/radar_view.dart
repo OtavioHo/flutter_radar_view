@@ -125,32 +125,32 @@ class _RadarViewState extends State<RadarView>
                 }
               },
               child: CanvasTouchDetector(
-                  gesturesToOverride: const [GestureType.onTapDown],
-                  builder: (context) {
-                    RadarPainter radarPainter = RadarPainter(
-                      context: context,
-                      offset:
-                          _dragable ? _currentOffset : _offsetAnimation.value,
-                      constraints: constraints,
-                      spots: widget.spots,
-                      painter: widget.customRadarPainter ??
-                          DefaultRadarPainter(
-                            rect: widget.rect ??
-                                Rect.fromLTRB(
-                                  20,
-                                  20,
-                                  constraints.maxWidth - 20,
-                                  constraints.maxHeight - 20,
-                                ),
-                            backgroundColor: widget.backgroundColor,
-                            foregroundColor: widget.foregroundColor,
-                            onTapSpot: widget.onTapSpot,
-                            scale: scale,
-                          ),
-                    );
+                gesturesToOverride: const [GestureType.onTapDown],
+                builder: (context) {
+                  RadarPainter radarPainter = RadarPainter(
+                    context: context,
+                    offset: _dragable ? _currentOffset : _offsetAnimation.value,
+                    constraints: constraints,
+                    spots: widget.spots,
+                    painter: widget.customRadarPainter ??
+                        DefaultRadarPainter(
+                          rect: widget.rect ??
+                              Rect.fromLTRB(
+                                20,
+                                20,
+                                constraints.maxWidth - 20,
+                                constraints.maxHeight - 20,
+                              ),
+                          backgroundColor: widget.backgroundColor,
+                          foregroundColor: widget.foregroundColor,
+                          onTapSpot: widget.onTapSpot,
+                          scale: scale,
+                        ),
+                  );
 
-                    return CustomPaint(painter: radarPainter);
-                  }),
+                  return CustomPaint(painter: radarPainter);
+                },
+              ),
             ),
           ),
         ],
