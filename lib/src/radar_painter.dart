@@ -10,14 +10,14 @@ class RadarPainter extends CustomPainter {
   double scale = 1.0;
   List<Spot> spots;
   Rect rect;
-  Function(Spot, TapDownDetails) onTapSpot;
+  Function(Spot, TapDownDetails)? onTapSpot;
 
   RadarPainter({
     required this.context,
     required this.offset,
     this.scale = 1.0,
     this.spots = const [],
-    required this.onTapSpot,
+    this.onTapSpot,
   }) : rect = Rect.fromLTRB(
           20,
           20,
@@ -25,92 +25,92 @@ class RadarPainter extends CustomPainter {
           MediaQuery.of(context).size.height - 20,
         );
 
-  _paintSpot({
-    required Canvas canvas,
-    required TouchyCanvas touchyCanvas,
-    required Offset center,
-    required Offset offset,
-    required Spot spot,
-    required Rect rect,
-  }) {
+  _defaulSpotPainter(Spot spot, Canvas canvas, TouchyCanvas touchyCanvas) {
     final borderPaint = Paint()..color = Colors.black;
     final backgroundPaint = Paint()..color = Colors.white;
     const double spotSize = 25;
 
-    Offset position = center
-        .translate(
-          spot.distance * cos(spot.theta) * scale,
-          spot.distance * sin(spot.theta) * scale,
-        )
-        .translate(offset.dx, offset.dy);
+    touchyCanvas.drawCircle(
+      spot.position(this),
+      spotSize,
+      borderPaint,
+      onTapDown:
+          onTapSpot != null ? (details) => onTapSpot!(spot, details) : null,
+    );
 
-    if (position.dx > rect.left - spotSize / 2 &&
-        position.dx < rect.width + spotSize / 2 &&
-        position.dy > rect.top - spotSize / 2 &&
-        position.dy < rect.height + spotSize / 2) {
-      touchyCanvas.drawCircle(
-        position,
-        spotSize,
-        borderPaint,
-        onTapDown: (details) => onTapSpot(spot, details),
-      );
+    touchyCanvas.drawCircle(
+      spot.position(this),
+      spotSize - 2,
+      backgroundPaint,
+      onTapDown:
+          onTapSpot != null ? (details) => onTapSpot!(spot, details) : null,
+    );
 
-      touchyCanvas.drawCircle(
-        position,
-        spotSize - 2,
-        backgroundPaint,
-        onTapDown: (details) => onTapSpot(spot, details),
-      );
-
-      TextPainter textPainter = TextPainter(textDirection: TextDirection.rtl);
-      textPainter.text = TextSpan(
-        text: String.fromCharCode(spot.icon.codePoint),
-        style: TextStyle(
-            fontSize: 30.0,
-            fontFamily: spot.icon.fontFamily,
-            color: Colors.black),
-      );
-      textPainter.layout();
-      textPainter.paint(canvas, position.translate(-14, -14));
-    } else {
-      Offset edgePosition;
-      double dx;
-      double dy;
-
-      if (position.dx > rect.left) {
-        dx = min(position.dx, rect.right);
-      } else {
-        dx = max(position.dx, rect.left);
-      }
-      if (position.dy > rect.top) {
-        dy = min(position.dy, rect.bottom);
-      } else {
-        dy = max(position.dy, rect.left);
-      }
-
-      edgePosition = Offset(dx, dy);
-      double theta = atan2(
-        center.dy - edgePosition.dy,
-        center.dx - edgePosition.dx,
-      );
-
-      TextPainter textPainter = TextPainter(textDirection: TextDirection.rtl);
-      textPainter.text = TextSpan(
-        text: String.fromCharCode(Icons.arrow_forward_ios.codePoint),
-        style: TextStyle(
+    TextPainter textPainter = TextPainter(textDirection: TextDirection.rtl);
+    textPainter.text = TextSpan(
+      text: String.fromCharCode(spot.icon.codePoint),
+      style: TextStyle(
           fontSize: 30.0,
-          fontFamily: Icons.arrow_forward_ios.fontFamily,
-          color: Colors.black,
-        ),
-      );
-      textPainter.layout();
+          fontFamily: spot.icon.fontFamily,
+          color: Colors.black),
+    );
+    textPainter.layout();
+    textPainter.paint(canvas, spot.position(this).translate(-14, -14));
+  }
 
-      canvas.save();
-      canvas.translate(edgePosition.dx, edgePosition.dy);
-      canvas.rotate(theta + pi);
-      canvas.translate(-edgePosition.dx, -edgePosition.dy);
-      textPainter.paint(canvas, edgePosition.translate(-14, -14));
-      canvas.restore();
+  _defaultOverflowPainte(Spot spot, Canvas canvas, TouchyCanvas touchyCanvas) {
+    Offset edgePosition;
+    double dx;
+    double dy;
+
+    Offset position = spot.position(this);
+
+    if (position.dx > rect.left) {
+      dx = min(position.dx, rect.right);
+    } else {
+      dx = max(position.dx, rect.left);
+    }
+    if (position.dy > rect.top) {
+      dy = min(position.dy, rect.bottom);
+    } else {
+      dy = max(position.dy, rect.left);
+    }
+
+    edgePosition = Offset(dx, dy);
+    double theta = atan2(
+      rect.center.dy - edgePosition.dy,
+      rect.center.dx - edgePosition.dx,
+    );
+
+    TextPainter textPainter = TextPainter(textDirection: TextDirection.rtl);
+    textPainter.text = TextSpan(
+      text: String.fromCharCode(Icons.arrow_forward_ios.codePoint),
+      style: TextStyle(
+        fontSize: 30.0,
+        fontFamily: Icons.arrow_forward_ios.fontFamily,
+        color: Colors.black,
+      ),
+    );
+    textPainter.layout();
+
+    canvas.save();
+    canvas.translate(edgePosition.dx, edgePosition.dy);
+    canvas.rotate(theta + pi);
+    canvas.translate(-edgePosition.dx, -edgePosition.dy);
+    textPainter.paint(canvas, edgePosition.translate(-14, -14));
+    canvas.restore();
+  }
+
+  _paintSpots({
+    required Canvas canvas,
+    required TouchyCanvas touchyCanvas,
+    required Spot spot,
+    required Rect rect,
+  }) {
+    if (rect.contains(spot.position(this))) {
+      _defaulSpotPainter(spot, canvas, touchyCanvas);
+    } else {
+      _defaultOverflowPainte(spot, canvas, touchyCanvas);
     }
   }
 
@@ -123,7 +123,7 @@ class RadarPainter extends CustomPainter {
     final bgpaint = Paint();
     bgpaint.color = Colors.yellow.withOpacity(0.2);
 
-    var center = Offset(size.width / 2, size.height / 2);
+    var center = rect.center;
     canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgpaint);
     for (var i = 0; i < 10; i++) {
@@ -145,11 +145,9 @@ class RadarPainter extends CustomPainter {
     var touchyCanvas = TouchyCanvas(context, canvas);
 
     for (var spot in spots) {
-      _paintSpot(
+      _paintSpots(
         canvas: canvas,
         touchyCanvas: touchyCanvas,
-        center: center,
-        offset: offset,
         spot: spot,
         rect: rect,
       );
