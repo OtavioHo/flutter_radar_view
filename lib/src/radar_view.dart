@@ -70,7 +70,7 @@ class RadarView extends StatefulWidget {
 }
 
 class _RadarViewState extends State<RadarView>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late final AnimationController _offsetAnimationController;
   late Tween<Offset> _offsetTween;
   late Animation<Offset> _offsetAnimation;
@@ -87,7 +87,7 @@ class _RadarViewState extends State<RadarView>
     _offsetTween = Tween(begin: Offset.zero, end: Offset.zero);
     _offsetAnimation = _offsetTween.animate(_offsetAnimationController)
       ..addListener(() {
-        setState(() {});
+        if (mounted) setState(() {});
       });
 
     scale = widget.initialScale;
@@ -116,6 +116,7 @@ class _RadarViewState extends State<RadarView>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return LayoutBuilder(builder: (context, constraints) {
       return Stack(
         children: [
@@ -171,4 +172,7 @@ class _RadarViewState extends State<RadarView>
       );
     });
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
