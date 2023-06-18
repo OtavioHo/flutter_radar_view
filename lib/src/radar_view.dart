@@ -7,6 +7,7 @@ import '../flutter_radar_view.dart';
 class RadarView extends StatefulWidget {
   const RadarView({
     super.key,
+    this.controller,
     required this.spots,
     this.initialScale = 1.0,
     this.rect,
@@ -31,6 +32,9 @@ class RadarView extends StatefulWidget {
           customRadarPainter == null || rect == null,
           'You can\'t use a custom painter and a rect at the same time, define the rect in your custom painter',
         );
+
+  /// Controller
+  final RadarController? controller;
 
   /// The list of spots to be displayed in the radar
   final List<Spot> spots;
@@ -88,16 +92,26 @@ class _RadarViewState extends State<RadarView>
 
     scale = widget.initialScale;
 
+    widget.controller?.addListener(() {
+      if (widget.controller!.shouldStartAnimation &&
+          !widget.controller!.isAnimating) {
+        animateToNewPosition(widget.controller!.animationEndOffset);
+      }
+    });
+
     super.initState();
   }
 
-  void animateToNewPosition(Offset position) {
+  void animateToNewPosition(Offset position) async {
+    widget.controller?.isAnimating = true;
+    widget.controller?.shouldStartAnimation = false;
     _dragable = false;
     _offsetTween.begin = _currentOffset;
     _offsetAnimationController.reset();
     _offsetTween.end = position;
-    _offsetAnimationController.forward();
+    await _offsetAnimationController.forward();
     _currentOffset = position;
+    widget.controller?.isAnimating = false;
   }
 
   @override

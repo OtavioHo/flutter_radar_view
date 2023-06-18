@@ -41,6 +41,8 @@ class _MyHomePageState extends State<MyHomePage> {
     Spot(distance: 350),
   ];
 
+  final RadarController _controller = RadarController();
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -55,9 +57,26 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         body: TabBarView(
           children: [
-            RadarView(
-              spots: spots,
-              initialScale: 1,
+            Stack(
+              children: [
+                Positioned.fill(
+                  child: RadarView(
+                    controller: _controller,
+                    spots: spots,
+                    initialScale: 1,
+                  ),
+                ),
+                Positioned(
+                  top: 20,
+                  right: 20,
+                  child: FloatingActionButton(
+                    onPressed: () {
+                      _controller.animateTo(const Offset(0, 0));
+                    },
+                    child: const Icon(Icons.my_location),
+                  ),
+                ),
+              ],
             ),
             RadarView(
               spots: spots,
