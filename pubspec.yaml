@@ -1,6 +1,6 @@
 name: flutter_radar_view
 description: A customizable and interactive radar view widget for Flutter that allows you to display and interact with multiple spots on a radar.
-version: 0.0.3
+version: 0.0.4
 homepage: https://github.com/OtavioHo/flutter_radar_view
 
 environment:

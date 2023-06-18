@@ -11,3 +11,7 @@
 - Fix bug that called animation on disposed state
 - automatic keep alive radar state
 - change DefaulRadarPainter implementation
+
+## 0.0.4
+
+- Update versions
