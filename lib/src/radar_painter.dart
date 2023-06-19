@@ -38,7 +38,7 @@ abstract class CustomRadarPainter {
     final backgroundPaint = Paint()..color = Colors.white;
 
     touchyCanvas.drawCircle(
-      spot.position(customPainter),
+      spot.painterPosition(customPainter),
       spot.size,
       borderPaint,
       onTapDown:
@@ -46,7 +46,7 @@ abstract class CustomRadarPainter {
     );
 
     touchyCanvas.drawCircle(
-      spot.position(customPainter),
+      spot.painterPosition(customPainter),
       spot.size - 2,
       backgroundPaint,
       onTapDown:
@@ -62,7 +62,8 @@ abstract class CustomRadarPainter {
           color: Colors.black),
     );
     textPainter.layout();
-    textPainter.paint(canvas, spot.position(customPainter).translate(-14, -14));
+    textPainter.paint(
+        canvas, spot.painterPosition(customPainter).translate(-14, -14));
   }
 
   // A function that overrides the default overflow icon painter
@@ -72,7 +73,7 @@ abstract class CustomRadarPainter {
     double dx;
     double dy;
 
-    Offset position = spot.position(customPainter);
+    Offset position = spot.painterPosition(customPainter);
 
     final Rect consideredRect = rect ??
         Rect.fromLTWH(
@@ -194,7 +195,7 @@ class RadarPainter extends CustomPainter {
     required Spot spot,
     required Rect rect,
   }) {
-    if (rect.contains(spot.position(this))) {
+    if (rect.contains(spot.painterPosition(this))) {
       painter.spotPainter(spot, canvas, touchyCanvas, this);
     } else {
       painter.overflowIconPainter(spot, canvas, touchyCanvas, this);

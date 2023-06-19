@@ -4,6 +4,7 @@ import 'package:touchable/touchable.dart';
 
 import '../flutter_radar_view.dart';
 
+/// The radar view widget.
 class RadarView extends StatefulWidget {
   const RadarView({
     super.key,
@@ -70,13 +71,19 @@ class RadarView extends StatefulWidget {
 }
 
 class _RadarViewState extends State<RadarView>
-    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+    with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late final AnimationController _offsetAnimationController;
   late Tween<Offset> _offsetTween;
   late Animation<Offset> _offsetAnimation;
   Offset _currentOffset = const Offset(0, 0);
+
+  late final AnimationController _scaleAnimationController;
+  late Tween<double> _scaleTween;
+  late Animation<double> _scaleAnimation;
+  double _currentScale = 1.0;
+
   bool _dragable = true;
-  late double scale;
+  bool _scalable = true;
 
   @override
   void initState() {
@@ -90,27 +97,63 @@ class _RadarViewState extends State<RadarView>
         if (mounted) setState(() {});
       });
 
-    scale = widget.initialScale;
+    _scaleAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _scaleTween = Tween(begin: 1.0, end: 1.0);
+    _scaleAnimation = _scaleTween.animate(_scaleAnimationController)
+      ..addListener(() {
+        if (mounted) setState(() {});
+      });
 
     widget.controller?.addListener(() {
       if (widget.controller!.shouldStartAnimation &&
           !widget.controller!.isAnimating) {
-        animateToNewPosition(widget.controller!.animationEndOffset);
+        _animateToNewPosition(widget.controller!.animationEndOffset);
+      }
+
+      if (widget.controller!.shouldStartScaleAnimation &&
+          !widget.controller!.isScaleAnimating) {
+        _animateToScale(widget.controller!.animationEndScale);
       }
     });
 
     super.initState();
   }
 
-  void animateToNewPosition(Offset position) async {
+  // Animate the radar to a new scale
+  void _animateToScale(double scale) async {
+    if (scale <= 0 || scale == _currentScale) return;
+    widget.controller!.isScaleAnimating = true;
+    widget.controller!.shouldStartScaleAnimation = false;
+    setState(() {
+      _scalable = false;
+    });
+    _scaleTween.begin = _currentScale;
+    _scaleAnimationController.reset();
+    _scaleTween.end = scale;
+    await _scaleAnimationController.forward();
+    setState(() {
+      _currentScale = scale;
+    });
+    widget.controller!.isScaleAnimating = false;
+  }
+
+  // Animate the radar to a new position
+  void _animateToNewPosition(Offset position) async {
     widget.controller?.isAnimating = true;
     widget.controller?.shouldStartAnimation = false;
-    _dragable = false;
+    setState(() {
+      _dragable = false;
+    });
     _offsetTween.begin = _currentOffset;
     _offsetAnimationController.reset();
     _offsetTween.end = position;
     await _offsetAnimationController.forward();
-    _currentOffset = position;
+    setState(() {
+      _currentOffset = position;
+    });
     widget.controller?.isAnimating = false;
   }
 
@@ -135,7 +178,8 @@ class _RadarViewState extends State<RadarView>
 
                 if (details.pointerCount == 2) {
                   setState(() {
-                    scale = details.scale;
+                    _scalable = true;
+                    _currentScale = details.scale;
                   });
                 }
               },
@@ -159,7 +203,8 @@ class _RadarViewState extends State<RadarView>
                           backgroundColor: widget.backgroundColor,
                           foregroundColor: widget.foregroundColor,
                           onTapSpot: widget.onTapSpot,
-                          scale: scale,
+                          scale:
+                              _scalable ? _currentScale : _scaleAnimation.value,
                         ),
                   );
 

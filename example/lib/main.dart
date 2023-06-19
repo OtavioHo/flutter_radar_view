@@ -42,6 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
 
   final RadarController _controller = RadarController();
+  double scale = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -69,11 +70,35 @@ class _MyHomePageState extends State<MyHomePage> {
                 Positioned(
                   top: 20,
                   right: 20,
-                  child: FloatingActionButton(
-                    onPressed: () {
-                      _controller.animateTo(const Offset(0, 0));
-                    },
-                    child: const Icon(Icons.my_location),
+                  child: Column(
+                    children: [
+                      FloatingActionButton(
+                        onPressed: () {
+                          _controller.animateTo(const Offset(0, 0));
+                        },
+                        child: const Icon(Icons.my_location),
+                      ),
+                      const SizedBox(height: 10),
+                      FloatingActionButton(
+                        onPressed: () {
+                          setState(() {
+                            scale = scale + 1;
+                          });
+                          _controller.scaleTo(scale);
+                        },
+                        child: const Icon(Icons.zoom_in),
+                      ),
+                      const SizedBox(height: 10),
+                      FloatingActionButton(
+                        onPressed: () {
+                          setState(() {
+                            scale = scale - 1;
+                          });
+                          _controller.scaleTo(scale);
+                        },
+                        child: const Icon(Icons.zoom_out),
+                      ),
+                    ],
                   ),
                 ),
               ],

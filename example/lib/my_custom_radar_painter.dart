@@ -92,7 +92,7 @@ class MyCustomRadarPainter extends CustomRadarPainter {
     double dx;
     double dy;
 
-    Offset position = spot.position(customPainter);
+    Offset position = spot.painterPosition(customPainter);
 
     final Rect consideredRect = rect ??
         Rect.fromLTWH(
@@ -145,7 +145,7 @@ class MyCustomRadarPainter extends CustomRadarPainter {
 
     touchyCanvas.drawRect(
       Rect.fromCircle(
-        center: spot.position(customPainter),
+        center: spot.painterPosition(customPainter),
         radius: spot.size,
       ),
       borderPaint,
@@ -155,7 +155,7 @@ class MyCustomRadarPainter extends CustomRadarPainter {
 
     touchyCanvas.drawRect(
       Rect.fromCircle(
-        center: spot.position(customPainter),
+        center: spot.painterPosition(customPainter),
         radius: spot.size - 2,
       ),
       backgroundPaint,
@@ -172,6 +172,7 @@ class MyCustomRadarPainter extends CustomRadarPainter {
           color: Colors.black),
     );
     textPainter.layout();
-    textPainter.paint(canvas, spot.position(customPainter).translate(-14, -14));
+    textPainter.paint(
+        canvas, spot.painterPosition(customPainter).translate(-14, -14));
   }
 }
