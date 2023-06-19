@@ -15,3 +15,9 @@
 ## 0.0.4
 
 - Update versions
+
+## 0.0.5
+
+- Add scale animation to controller
+- Update Spot with method to get position relative to the center of the radar.
+- Update docs.
