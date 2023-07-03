@@ -21,3 +21,7 @@
 - Add scale animation to controller
 - Update Spot with method to get position relative to the center of the radar.
 - Update docs.
+
+## 0.0.6 
+
+- Add custom type to CustomRadarPainter
