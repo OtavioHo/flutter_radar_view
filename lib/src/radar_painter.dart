@@ -4,7 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_radar_view/src/spot.dart';
 import 'package:touchable/touchable.dart';
 
-abstract class CustomRadarPainter {
+/// A custom painter for the radar
+///
+/// This class is used to customize the radar painter
+/// The custom type T is the type of the data that is passed to the spots
+abstract class CustomRadarPainter<T> {
   CustomRadarPainter({
     this.scale = 1.0,
     this.onTapSpot,
@@ -19,7 +23,7 @@ abstract class CustomRadarPainter {
   Rect? rect;
 
   /// The callback for when a spot is tapped
-  Function(Spot, TapDownDetails)? onTapSpot;
+  Function(Spot<T>, TapDownDetails)? onTapSpot;
 
   /// The background color of the radar
   ///
@@ -32,7 +36,7 @@ abstract class CustomRadarPainter {
   Color? foregroundColor;
 
   // A function that overrides the default spot painter
-  void spotPainter(Spot spot, Canvas canvas, TouchyCanvas touchyCanvas,
+  void spotPainter(Spot<T> spot, Canvas canvas, TouchyCanvas touchyCanvas,
       RadarPainter customPainter) {
     final borderPaint = Paint()..color = Colors.black;
     final backgroundPaint = Paint()..color = Colors.white;
@@ -67,8 +71,8 @@ abstract class CustomRadarPainter {
   }
 
   // A function that overrides the default overflow icon painter
-  void overflowIconPainter(Spot spot, Canvas canvas, TouchyCanvas touchyCanvas,
-      RadarPainter customPainter) {
+  void overflowIconPainter(Spot<T> spot, Canvas canvas,
+      TouchyCanvas touchyCanvas, RadarPainter customPainter) {
     Offset edgePosition;
     double dx;
     double dy;
