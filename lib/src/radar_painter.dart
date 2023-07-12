@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_radar_view/src/helpers/default_cluster_function.dart';
 import 'package:flutter_radar_view/src/spot.dart';
 import 'package:touchable/touchable.dart';
 
@@ -15,6 +16,9 @@ abstract class CustomRadarPainter<T> {
     this.backgroundColor,
     this.foregroundColor,
     this.rect,
+    this.clusterFn,
+    this.shouldClusterSpots = true,
+    this.onTapCluster,
   });
 
   /// The current scale of the radar
@@ -34,6 +38,19 @@ abstract class CustomRadarPainter<T> {
   ///
   /// Defaults to the theme's primary color
   Color? foregroundColor;
+
+  /// A function that clusters the spots
+  Map<RadarPosition, List<Spot<T>>> Function(List<Spot<T>> spots)? clusterFn;
+
+  /// Whether or not the spots should be clustered
+  /// Defaults to true
+  /// If false, the clusterFn will not be called
+  /// and the spots will be drawn as they are
+  bool shouldClusterSpots = true;
+
+  /// The callback for when a cluster is tapped
+  /// If null, the cluster will not be tappable
+  void Function(List<Spot<T>>, TapDownDetails)? onTapCluster;
 
   // A function that overrides the default spot painter
   void spotPainter(Spot<T> spot, Canvas canvas, TouchyCanvas touchyCanvas,
@@ -68,6 +85,40 @@ abstract class CustomRadarPainter<T> {
     textPainter.layout();
     textPainter.paint(
         canvas, spot.painterPosition(customPainter).translate(-14, -14));
+  }
+
+  // A function that overrides the default cluster painter
+  void clusterPainter(List<Spot<T>> spots, RadarPosition position,
+      Canvas canvas, TouchyCanvas touchyCanvas, RadarPainter customPainter) {
+    final borderPaint = Paint()..color = Colors.black;
+    final backgroundPaint = Paint()..color = Colors.white;
+
+    touchyCanvas.drawCircle(
+      position.painterPosition(customPainter),
+      30, // TODO: update this to a variable
+      borderPaint,
+      onTapDown: onTapCluster != null
+          ? (details) => onTapCluster!(spots, details)
+          : null,
+    );
+
+    touchyCanvas.drawCircle(
+      position.painterPosition(customPainter),
+      28,
+      backgroundPaint,
+      onTapDown: onTapCluster != null
+          ? (details) => onTapCluster!(spots, details)
+          : null,
+    );
+
+    TextPainter textPainter = TextPainter(textDirection: TextDirection.rtl);
+    textPainter.text = TextSpan(
+      text: "${spots.length}",
+      style: const TextStyle(fontSize: 30.0, color: Colors.black),
+    );
+    textPainter.layout();
+    textPainter.paint(
+        canvas, position.painterPosition(customPainter).translate(-9, -18));
   }
 
   // A function that overrides the default overflow icon painter
@@ -206,6 +257,16 @@ class RadarPainter extends CustomPainter {
     }
   }
 
+  _paintCluster({
+    required Canvas canvas,
+    required TouchyCanvas touchyCanvas,
+    required List<Spot> spots,
+    required RadarPosition position,
+    required Rect rect,
+  }) {
+    painter.clusterPainter(spots, position, canvas, touchyCanvas, this);
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     canvas.clipRect(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -213,13 +274,41 @@ class RadarPainter extends CustomPainter {
 
     var touchyCanvas = TouchyCanvas(context, canvas);
 
-    for (var spot in spots) {
-      _paintSpots(
-        canvas: canvas,
-        touchyCanvas: touchyCanvas,
-        spot: spot,
-        rect: painter.rect ?? Rect.fromLTWH(0, 0, size.width, size.height),
-      );
+    if (painter.shouldClusterSpots) {
+      Map<RadarPosition, List<Spot>> clusters;
+      if (painter.clusterFn == null) {
+        clusters = defaultClusterFunction(spots, 4, 100);
+      } else {
+        clusters = painter.clusterFn!(spots);
+      }
+
+      for (var position in clusters.keys) {
+        if (clusters[position]!.length == 1) {
+          _paintSpots(
+              canvas: canvas,
+              touchyCanvas: touchyCanvas,
+              spot: clusters[position]!.first,
+              rect:
+                  painter.rect ?? Rect.fromLTWH(0, 0, size.width, size.height));
+        } else {
+          _paintCluster(
+            canvas: canvas,
+            touchyCanvas: touchyCanvas,
+            spots: clusters[position]!,
+            position: position,
+            rect: painter.rect ?? Rect.fromLTWH(0, 0, size.width, size.height),
+          );
+        }
+      }
+    } else {
+      for (var spot in spots) {
+        _paintSpots(
+          canvas: canvas,
+          touchyCanvas: touchyCanvas,
+          spot: spot,
+          rect: painter.rect ?? Rect.fromLTWH(0, 0, size.width, size.height),
+        );
+      }
     }
   }
 
