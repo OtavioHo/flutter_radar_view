@@ -29,3 +29,7 @@
 ## 0.0.7
 
 - Add simple cluster functionality
+
+## 0.0.8
+
+- Fix types and cluster params
