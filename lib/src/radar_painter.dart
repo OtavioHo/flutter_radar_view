@@ -213,7 +213,7 @@ abstract class CustomRadarPainter<T> {
   }
 }
 
-class RadarPainter extends CustomPainter {
+class RadarPainter<T> extends CustomPainter {
   /// [rect] Defines the radar's boundaries, where the spots will be displayed.
   ///
   /// The radar will be centered within this rect.
@@ -239,15 +239,15 @@ class RadarPainter extends CustomPainter {
   BoxConstraints constraints;
 
   /// The list of spots to be displayed in the radar
-  List<Spot> spots;
+  List<Spot<T>> spots;
 
   /// The painter that will be used to paint the radar
-  CustomRadarPainter painter;
+  CustomRadarPainter<T> painter;
 
   _paintSpots({
     required Canvas canvas,
     required TouchyCanvas touchyCanvas,
-    required Spot spot,
+    required Spot<T> spot,
     required Rect rect,
   }) {
     if (rect.contains(spot.painterPosition(this))) {
@@ -260,7 +260,7 @@ class RadarPainter extends CustomPainter {
   _paintCluster({
     required Canvas canvas,
     required TouchyCanvas touchyCanvas,
-    required List<Spot> spots,
+    required List<Spot<T>> spots,
     required RadarPosition position,
     required Rect rect,
   }) {
@@ -275,9 +275,9 @@ class RadarPainter extends CustomPainter {
     var touchyCanvas = TouchyCanvas(context, canvas);
 
     if (painter.shouldClusterSpots) {
-      Map<RadarPosition, List<Spot>> clusters;
+      Map<RadarPosition, List<Spot<T>>> clusters;
       if (painter.clusterFn == null) {
-        clusters = defaultClusterFunction(spots, 4, 100);
+        clusters = defaultClusterFunction<T>(spots, 4, 100);
       } else {
         clusters = painter.clusterFn!(spots);
       }

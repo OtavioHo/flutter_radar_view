@@ -33,9 +33,9 @@ class RadarPosition {
   }
 }
 
-Map<RadarPosition, List<Spot>> defaultClusterFunction(
-    List<Spot> spots, int p, int d) {
-  Map<RadarPosition, List<Spot>> clusters = {};
+Map<RadarPosition, List<Spot<T>>> defaultClusterFunction<T>(
+    List<Spot<T>> spots, int p, int d) {
+  Map<RadarPosition, List<Spot<T>>> clusters = {};
 
   for (var spot in spots) {
     int layer = (spot.distance ~/ d) + 1;

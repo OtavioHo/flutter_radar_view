@@ -3,9 +3,10 @@ import 'package:flutter_radar_view/src/default_radar_painter.dart';
 import 'package:touchable/touchable.dart';
 
 import '../flutter_radar_view.dart';
+import 'helpers/default_cluster_function.dart';
 
 /// The radar view widget.
-class RadarView extends StatefulWidget {
+class RadarView<T> extends StatefulWidget {
   const RadarView({
     super.key,
     this.controller,
@@ -17,6 +18,9 @@ class RadarView extends StatefulWidget {
     this.backgroundColor,
     this.foregroundColor,
     this.onTapSpot,
+    this.shouldClusterSpots = true,
+    this.clusterFn,
+    this.onTapCluster,
   })  : assert(
           customRadarPainter == null || backgroundColor == null,
           'You can\'t use a custom painter and a background color at the same time, define the background color in your custom painter',
@@ -38,7 +42,7 @@ class RadarView extends StatefulWidget {
   final RadarController? controller;
 
   /// The list of spots to be displayed in the radar
-  final List<Spot> spots;
+  final List<Spot<T>> spots;
 
   /// The initial scale of the radar
   final double initialScale;
@@ -55,7 +59,7 @@ class RadarView extends StatefulWidget {
   final bool isDragable;
 
   /// A custom painter for the radar
-  final CustomRadarPainter? customRadarPainter;
+  final CustomRadarPainter<T>? customRadarPainter;
 
   /// The background color of the radar
   final Color? backgroundColor;
@@ -66,11 +70,25 @@ class RadarView extends StatefulWidget {
   /// Callback of click spot
   final Function(Spot, TapDownDetails)? onTapSpot;
 
+  /// A function that clusters the spots
+  final Map<RadarPosition, List<Spot<T>>> Function(List<Spot<T>> spots)?
+      clusterFn;
+
+  /// Whether or not the spots should be clustered
+  /// Defaults to true
+  /// If false, the clusterFn will not be called
+  /// and the spots will be drawn as they are
+  final bool shouldClusterSpots;
+
+  /// The callback for when a cluster is tapped
+  /// If null, the cluster will not be tappable
+  final void Function(List<Spot<T>>, TapDownDetails)? onTapCluster;
+
   @override
-  State<RadarView> createState() => _RadarViewState();
+  State<RadarView> createState() => _RadarViewState<T>();
 }
 
-class _RadarViewState extends State<RadarView>
+class _RadarViewState<T> extends State<RadarView<T>>
     with TickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late final AnimationController _offsetAnimationController;
   late Tween<Offset> _offsetTween;
@@ -186,13 +204,13 @@ class _RadarViewState extends State<RadarView>
               child: CanvasTouchDetector(
                 gesturesToOverride: const [GestureType.onTapDown],
                 builder: (context) {
-                  RadarPainter radarPainter = RadarPainter(
+                  RadarPainter<T> radarPainter = RadarPainter(
                     context: context,
                     offset: _dragable ? _currentOffset : _offsetAnimation.value,
                     constraints: constraints,
                     spots: widget.spots,
                     painter: widget.customRadarPainter ??
-                        DefaultRadarPainter(
+                        DefaultRadarPainter<T>(
                           rect: widget.rect ??
                               Rect.fromLTRB(
                                 20,
@@ -205,6 +223,9 @@ class _RadarViewState extends State<RadarView>
                           onTapSpot: widget.onTapSpot,
                           scale:
                               _scalable ? _currentScale : _scaleAnimation.value,
+                          shouldClusterSpots: widget.shouldClusterSpots,
+                          clusterFn: widget.clusterFn,
+                          onTapCluster: widget.onTapCluster,
                         ),
                   );
 
