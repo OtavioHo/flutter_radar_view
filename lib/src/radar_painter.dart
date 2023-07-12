@@ -95,7 +95,7 @@ abstract class CustomRadarPainter<T> {
 
     touchyCanvas.drawCircle(
       position.painterPosition(customPainter),
-      30, // TODO: update this to a variable
+      30,
       borderPaint,
       onTapDown: onTapCluster != null
           ? (details) => onTapCluster!(spots, details)

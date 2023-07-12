@@ -25,3 +25,7 @@
 ## 0.0.6 
 
 - Add custom type to CustomRadarPainter
+
+## 0.0.7
+
+- Add simple cluster functionality
